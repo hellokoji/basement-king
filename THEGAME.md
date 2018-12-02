@@ -1,2 +1,1 @@
-/gain username pts
-/lose username pts
+/pts username +/-# message
