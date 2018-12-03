@@ -3,6 +3,7 @@ const {google} = require('googleapis');
 
 // The file token.json stores the API key to call the Sheets APIs.
 const TOKEN_PATH = 'token.json';
+let SCOREBOARD_CACHE;
 const SPREADSHEET_ID = '1Bl_imBpmXZcyvCUVTPwuUtceZy8A5Ly41HlVjJ_5GQI';
 let API_KEY_RESOLVE, API_KEY_REJECT;
 const API_KEY_PROMISE = new Promise((resolve, reject) => {
@@ -32,19 +33,20 @@ async function getScoreboard(callback) {
   }, (err, res) => {
     if (err) return console.log('The API returned an error: ' + err);
     const rows = res.data.values;
-    const players = [];
+    const players = {};
     if (rows.length) {
-      rows.map((row) => {
-        const currentPlayer = {};
-        currentPlayer.name = row[0];
-        currentPlayer.username = row[1];
-        currentPlayer.points = row[2];
-        console.log(currentPlayer);
-        players.push(currentPlayer);
+      rows.map((row, index) => {
+        const player = {};
+        player.name = row[0];
+        player.points = row[2];
+        player.row = row;
+        player.rowNum = index + 2;
+        players[row[1]] = player;
       });
     } else {
       console.log('No data found.');
     }
+    SCOREBOARD_CACHE = players;
     callback(players);
   });
 }
