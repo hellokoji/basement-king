@@ -1,4 +1,4 @@
-const Sheets = require('./sheets_helper.js');
+const Sheets = require('../helpers/sheets_helper.js');
 
 // The file token.json stores the API key to call the Sheets APIs.
 let SCOREBOARD_CACHE;
