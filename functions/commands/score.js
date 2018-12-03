@@ -19,9 +19,11 @@ const Scoreboard = require('../../utils/scoreboard.js');
 module.exports = (user, channel, text = '', command = {}, botToken = null, callback) => {
   Scoreboard.getScoreboard(players => {
     let out = '';
-    players.forEach(element => {
-      out += element.username + ' : ' + element.points + '\n';
-    });
+    for (let player in players) {
+      if (players.hasOwnProperty(player)) {
+        out += player + ' : ' + players[player].points + '\n';          
+      }
+    }
     callback(null, {
       text: out,
       attachments: [
