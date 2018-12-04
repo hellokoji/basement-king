@@ -1,5 +1,7 @@
 const Scoreboard = require('../../utils/scoreboard.js');
 
+const ERROR_MESSAGE = `Something went wrong! Phoebe and Mandu are fiddling with the cords.`;
+
 /**
 *   Extract points query from a string.
 
@@ -7,7 +9,7 @@ const Scoreboard = require('../../utils/scoreboard.js');
 * @returns {object} An object containing data of the points query.
 */
 function getPointsFromMessage(text) {
-  const pattern = /(\S+)\s((-|\+)?[0-9]+)\s?(.*)/
+  const pattern = /(\S+)\s((-|\+)?[0-9]+)(\s(.*))?$/
   const match = text.match(pattern);
   if (match === null) {
     throw new Error('Unable to extract points from message! - \"' + text + '\"');
@@ -16,7 +18,7 @@ function getPointsFromMessage(text) {
 
   points.username = match[1];
   points.adjustment = parseInt(match[2]);
-  points.msg = match[4];
+  points.msg = match[5];
 
   return points;
 }
@@ -37,22 +39,26 @@ function getPointsFromMessage(text) {
 */
 module.exports = (user, channel, text = '', command = {}, botToken = null, callback) => {
   if (channel === 'bot_dev' || channel === 'basementking') {
+    console.log('/pts ' + text);
     let out, points;
     try {
       points = getPointsFromMessage(text);
-      out = `<@${user}>: ${points.username} ${points.adjustment > 0 ? '+':''}${points.adjustment} pts${!!points.msg ? ' -- ' + points.msg : ''}`;
     } catch (e) {
-      out = `Something went wrong! Phoebe and Mandu are fiddling with the cords.`;
-    }
-    // Send points to sheets backend
-    Scoreboard.updatePoints(points.username, points.adjustment, () => {
+      console.error(e);
       callback(null, {
-        text: out,
-        attachments: [
-          // You can customize your messages with attachments.
-          // See https://api.slack.com/docs/message-attachments for more info.
-        ]
+        text: 'Invalid format! Please follow /pts username +/-# message(optional).'
       });
-    });
+      return;
+    }
+    try {
+      out = `<@${user}>: ${points.username} ${points.adjustment > 0 ? '+':''}${points.adjustment} pts${!!points.msg ? ' -- ' + points.msg : ''}`;
+      // Send points to sheets backend      
+      Scoreboard.updatePoints(points.username, points.adjustment, msg => {
+        callback(null, { text: msg ? msg : out });
+      });
+    } catch (e) {
+      console.error(e);
+      callback(null, { text: ERROR_MESSAGE });
+    }
   }
 };

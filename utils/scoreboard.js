@@ -62,7 +62,10 @@ function updatePoints(username, mod, callback) {
  */
 async function performUpdatePoints(players, username, mod, callback) {
   if (!players[username]) {
-    throw new Error('Unable to find ' + username +' in Scoreboard!');
+    const error = 'Unable to find ' + username + ' in Scoreboard!';
+    console.error('Error -', error);
+    callback(error);
+    return;
   }
   let sheets;
   try {
