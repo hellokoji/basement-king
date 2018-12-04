@@ -44,10 +44,10 @@ module.exports = (user, channel, text = '', command = {}, botToken = null, callb
     try {
       points = getPointsFromMessage(text);
     } catch (e) {
-      console.error(e);
       callback(null, {
         text: 'Invalid format! Please follow /pts username +/-# message(optional).'
       });
+      console.error(e);
       return;
     }
     try {
@@ -57,8 +57,8 @@ module.exports = (user, channel, text = '', command = {}, botToken = null, callb
         callback(null, { text: msg ? msg : out });
       });
     } catch (e) {
-      console.error(e);
       callback(null, { text: ERROR_MESSAGE });
+      console.error(e);
     }
   }
 };

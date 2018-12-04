@@ -16,14 +16,14 @@ async function getScoreboard(callback) {
     spreadsheetId: await Sheets.getSheetID(),
     range: 'Scoreboard!A2:C',
   }, (err, res) => {
-    if (err) return console.log('The API returned an error: ' + err);
+    if (err) return console.error('The API returned an error: ' + err);
     const rows = res.data.values;
     const players = {};
     if (rows.length) {
       rows.map((row, index) => {
         const player = {};
         player.name = row[0];
-        player.points = row[2];
+        player.points = row[2] ? row[2] : 0;
         player.row = row;
         player.rowNum = index + 2;
         players[row[1]] = player;
@@ -63,8 +63,8 @@ function updatePoints(username, mod, callback) {
 async function performUpdatePoints(players, username, mod, callback) {
   if (!players[username]) {
     const error = 'Unable to find ' + username + ' in Scoreboard!';
-    console.error('Error -', error);
     callback(error);
+    console.error('Error -', error);
     return;
   }
   let sheets;
