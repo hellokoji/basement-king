@@ -36,21 +36,23 @@ function getPointsFromMessage(text) {
 * @returns {object}
 */
 module.exports = (user, channel, text = '', command = {}, botToken = null, callback) => {
-  let out, points;
-  try {
-    points = getPointsFromMessage(text);
-    out = `<@${user}>: ${points.username} ${points.adjustment > 0 ? '+':''}${points.adjustment} pts${!!points.msg ? ' -- ' + points.msg : ''}`;
-  } catch (e) {
-    out = `Something went wrong! Phoebe and Mandu are fiddling with the cords.`;
-  }
-  // Send points to sheets backend
-  Scoreboard.updatePoints(points.username, points.adjustment, () => {
-    callback(null, {
-      text: out,
-      attachments: [
-        // You can customize your messages with attachments.
-        // See https://api.slack.com/docs/message-attachments for more info.
-      ]
+  if (channel === 'bot_dev' || channel === 'basementking') {
+    let out, points;
+    try {
+      points = getPointsFromMessage(text);
+      out = `<@${user}>: ${points.username} ${points.adjustment > 0 ? '+':''}${points.adjustment} pts${!!points.msg ? ' -- ' + points.msg : ''}`;
+    } catch (e) {
+      out = `Something went wrong! Phoebe and Mandu are fiddling with the cords.`;
+    }
+    // Send points to sheets backend
+    Scoreboard.updatePoints(points.username, points.adjustment, () => {
+      callback(null, {
+        text: out,
+        attachments: [
+          // You can customize your messages with attachments.
+          // See https://api.slack.com/docs/message-attachments for more info.
+        ]
+      });
     });
-  });
+  }
 };

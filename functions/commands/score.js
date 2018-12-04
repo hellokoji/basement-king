@@ -16,19 +16,21 @@ const Scoreboard = require('../../utils/scoreboard.js');
 * @returns {object}
 */
 module.exports = (user, channel, text = '', command = {}, botToken = null, callback) => {
-  Scoreboard.getScoreboard(players => {
-    let out = '';
-    for (let player in players) {
-      if (players.hasOwnProperty(player)) {
-        out += player + ' : ' + players[player].points + '\n';          
+  if (channel === 'bot_dev' || channel === 'basementking') {
+    Scoreboard.getScoreboard(players => {
+      let out = '';
+      for (let player in players) {
+        if (players.hasOwnProperty(player)) {
+          out += player + ' : ' + players[player].points + '\n';          
+        }
       }
-    }
-    callback(null, {
-      text: out,
-      attachments: [
-        // You can customize your messages with attachments.
-        // See https://api.slack.com/docs/message-attachments for more info.
-      ]
+      callback(null, {
+        text: out,
+        attachments: [
+          // You can customize your messages with attachments.
+          // See https://api.slack.com/docs/message-attachments for more info.
+        ]
+      });
     });
-  });
+  }
 };
