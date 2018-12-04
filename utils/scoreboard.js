@@ -1,7 +1,5 @@
 const Sheets = require('../helpers/sheets_helper.js');
 
-let SCOREBOARD_CACHE;
-
 /**
  * Prints the names and majors of students in a sample spreadsheet:
  * @see https://docs.google.com/spreadsheets/d/1Bl_imBpmXZcyvCUVTPwuUtceZy8A5Ly41HlVjJ_5GQI/edit
@@ -39,21 +37,16 @@ async function getScoreboard(callback) {
 }
 
 /**
- * Updates a user's points in sheets and calls the callback function afterwards.
- * Leverages an instance variable of the scoreboard if it has been retrieved
- * during this session to speed up the request.
+ * Updates a user's points in sheets and calls the callback function afterwards. First calls
+ * getScoreboard to grab the current state of the sheets.
  * @param {string} username User's handle in sheets
  * @param {int} mod The adjusment being made to a user's points
  * @param {Function} callback Callback function that is called after sheets write
  */
 function updatePoints(username, mod, callback) {
-  if (!SCOREBOARD_CACHE) {
-    getScoreboard(players => {
-      performUpdatePoints(players, username, mod, callback);
-    });
-  } else {
-    performUpdatePoints(SCOREBOARD_CACHE, username, mod, callback);
-  }
+  getScoreboard(players => {
+    performUpdatePoints(players, username, mod, callback);
+  });
 }
 
 /**
@@ -62,9 +55,10 @@ function updatePoints(username, mod, callback) {
  * the corresponding row.
  * @param {Object} players The scoreboard object containing all of the players
  *    data.
- * @param {*} username The player's username handle in sheets.
- * @param {*} mod The adjustment to be made to a user's point total.
- * @param {*} callback The function that will be called after sheets has been executed.
+ * @param {string} username The player's username handle in sheets.
+ * @param {int} mod The adjustment to be made to a user's point total.
+ * @param {Function} callback The function that will be called after sheets
+ *    has been executed.
  */
 async function performUpdatePoints(players, username, mod, callback) {
   if (!players[username]) {
