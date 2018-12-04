@@ -30,10 +30,7 @@ function getAuthClient() {
   //authenticate request
   jwtClient.authorize(function (err, tokens) {
     if (err) {
-      console.log(err);
-      return;
-    } else {
-      console.log("Successfully connected!");
+      throw new Error('Error authorizing sheets client! - ' + err);
     }
   });
   return jwtClient;
