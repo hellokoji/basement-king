@@ -28,8 +28,6 @@ function getPointsFromMessage(text) {
 *
 *   Modify points command.
 *
-*   See https://api.slack.com/slash-commands for more details.
-*
 * @param {string} user The user id of the user that invoked this command (name is usable as well)
 * @param {string} channel The channel id the command was executed in (name is usable as well)
 * @param {string} text The text contents of the command
