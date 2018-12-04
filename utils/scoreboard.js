@@ -1,6 +1,5 @@
 const Sheets = require('../helpers/sheets_helper.js');
 
-// The file token.json stores the API key to call the Sheets APIs.
 let SCOREBOARD_CACHE;
 
 /**
@@ -39,30 +38,60 @@ async function getScoreboard(callback) {
   });
 }
 
-// function updatePoints(callback) {
-//   if (!SCOREBOARD_CACHE) {
-//     getScoreboard(players => {
+/**
+ * Updates a user's points in sheets and calls the callback function afterwards.
+ * Leverages an instance variable of the scoreboard if it has been retrieved
+ * during this session to speed up the request.
+ * @param {string} username User's handle in sheets
+ * @param {int} mod The adjusment being made to a user's points
+ * @param {Function} callback Callback function that is called after sheets write
+ */
+function updatePoints(username, mod, callback) {
+  if (!SCOREBOARD_CACHE) {
+    getScoreboard(players => {
+      performUpdatePoints(players, username, mod, callback);
+    });
+  } else {
+    performUpdatePoints(SCOREBOARD_CACHE, username, mod, callback);
+  }
+}
 
-//     })
-//   }
-// }
-
-async function performUpdatePoints(players) {
+/**
+ * Performer for point update. If the player's username does not exist in the
+ * sheets, an error will be thrown. Always tries to modify the C column of
+ * the corresponding row.
+ * @param {Object} players The scoreboard object containing all of the players
+ *    data.
+ * @param {*} username The player's username handle in sheets.
+ * @param {*} mod The adjustment to be made to a user's point total.
+ * @param {*} callback The function that will be called after sheets has been executed.
+ */
+async function performUpdatePoints(players, username, mod, callback) {
+  if (!players[username]) {
+    throw new Error('Unable to find ' + username +' in Scoreboard!');
+  }
   let sheets;
   try {
     sheets = await Sheets.getSheets();
   } catch (e) {
     throw new Error('Unable to intialize sheets. Something went wrong.');
   }
-  // sheets.spreadsheets.values.get({
-  //   spreadsheetId: await Sheets.getSheetID(),
-  //   range: 'Scoreboard!A2:C',
-  // }, (err, res) => {
-  //   if (err) return console.log('The API returned an error: ' + err);
-  //   callback(players);
-  // });
+
+  const score = parseInt(players[username].points) + mod;
+  sheets.spreadsheets.values.update({
+    spreadsheetId: await Sheets.getSheetID(),
+    range: 'Scoreboard!C' + players[username].rowNum,
+    includeValuesInResponse: true,
+    valueInputOption: 'RAW',
+    resource: { values: [[score]] },
+    auth: await Sheets.getAuthClient(),
+  }, (err, res) => {
+    if (err) throw new Error('The API returned an error: ' + err);
+    callback();
+  });
 }
 
 module.exports = {
-    getScoreboard,
+  getScoreboard,
+  updatePoints,
 }
