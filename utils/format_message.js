@@ -21,7 +21,8 @@ const FIELDS = [
   'icon_emoji',
   'thread_ts',
   'reply_broadcast',
-  'ts'
+  'ts',
+  'channel',
 ];
 
 module.exports = (token, channel, text) => {

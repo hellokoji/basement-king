@@ -37,6 +37,9 @@ module.exports = (user, channel, text = '', command = {}, botToken = null, callb
       });
     });
   } else {
-    callback(null, {text: 'You are not in the right channel! Try #basementking.'});
+    callback(null, {
+      channel: user,
+      text: 'You are not in the right channel! Try #basementking.',
+    });
   }
 };

@@ -11,5 +11,8 @@
 * @returns {object}
 */
 module.exports = (user, channel, text = '', command = {}, botToken = null, callback) => {
-  callback(null, { text: 'pong' });
+  callback(null, { 
+    text: 'pong',
+    channel: user,
+  });
 };

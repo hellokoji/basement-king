@@ -47,7 +47,8 @@ module.exports = (user, channel, text = '', command = {}, botToken = null, callb
       points = getPointsFromMessage(text);
     } catch (e) {
       callback(null, {
-        text: 'Invalid format! Please follow /pts username +/-# message(optional).'
+        channel: user,
+        text: 'Invalid format! Please follow /pts username +/-# message(optional).',
       });
       console.error(e);
       return;
@@ -59,10 +60,16 @@ module.exports = (user, channel, text = '', command = {}, botToken = null, callb
         callback(null, { text: msg ? msg : out });
       });
     } catch (e) {
-      callback(null, { text: ERROR_MESSAGE });
+      callback(null, {
+        channel: user,
+        text: ERROR_MESSAGE,
+      });
       console.error(e);
     }
   } else {
-    callback(null, {text: 'You are not in the right channel! Try #basementking.'});
+    callback(null, {
+      channel: user,
+      text: 'You are not in the right channel! Try #basementking.',
+    });
   }
 };
