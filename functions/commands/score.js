@@ -1,12 +1,16 @@
 const Scoreboard = require('../../utils/scoreboard.js');
 
+const RESTRICTED_CHANNELS = [
+  'CEGN9SP0X', // #basementking
+  'C1JVC6R3P', // #bot_dev
+]
+
 /**
 * /score
 *
 *   What's the score? command. Echoes to the channel what the score is
 *   back to the channel. Spits out the player name, username, and current
 *   points.
-*
 *
 * @param {string} user The user id of the user that invoked this command (name is usable as well)
 * @param {string} channel The channel id the command was executed in (name is usable as well)
@@ -16,7 +20,7 @@ const Scoreboard = require('../../utils/scoreboard.js');
 * @returns {object}
 */
 module.exports = (user, channel, text = '', command = {}, botToken = null, callback) => {
-  if (channel === 'bot_dev' || channel === 'basementking') {
+  if (RESTRICTED_CHANNELS.indexOf(channel) > -1) {
     Scoreboard.getScoreboard(players => {
       let out = '';
       for (let player in players) {
@@ -32,5 +36,7 @@ module.exports = (user, channel, text = '', command = {}, botToken = null, callb
         ]
       });
     });
+  } else {
+    callback(null, {text: 'You are not in the right channel! Try #basementking.'});
   }
 };

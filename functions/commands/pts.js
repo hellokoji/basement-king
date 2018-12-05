@@ -1,6 +1,10 @@
 const Scoreboard = require('../../utils/scoreboard.js');
 
 const ERROR_MESSAGE = `Something went wrong! Phoebe and Mandu are fiddling with the cords.`;
+const RESTRICTED_CHANNELS = [
+  'CEGN9SP0X', // #basementking
+  'C1JVC6R3P', // #bot_dev
+]
 
 /**
 *   Extract points query from a string.
@@ -36,7 +40,7 @@ function getPointsFromMessage(text) {
 * @returns {object}
 */
 module.exports = (user, channel, text = '', command = {}, botToken = null, callback) => {
-  if (channel === 'bot_dev' || channel === 'basementking') {
+  if (RESTRICTED_CHANNELS.indexOf(channel) > -1) {
     console.log('/pts ' + text);
     let out, points;
     try {
@@ -58,5 +62,7 @@ module.exports = (user, channel, text = '', command = {}, botToken = null, callb
       callback(null, { text: ERROR_MESSAGE });
       console.error(e);
     }
+  } else {
+    callback(null, {text: 'You are not in the right channel! Try #basementking.'});
   }
 };
