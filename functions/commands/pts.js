@@ -5,26 +5,36 @@ const RESTRICTED_CHANNELS = [
   'CEGN9SP0X', // #basementking
   'C1JVC6R3P', // #bot_dev
 ]
+const PTS_REGEX = /^(\S+(,\s?\S+)*)\s((-|\+)?[0-9]+)(\s(.*))?$/;
 
 /**
-*   Extract points query from a string.
-
+*   Extract points query from a string. Can have multiple users being modified
+*   simultaneously.
+*   Format is: /pts username(,username2,...) +/-# message(optional).
+*
 * @param {string} text The text contents of the command
-* @returns {object} An object containing data of the points query.
+* @returns {Object[]} An array containing the objects of the user with
+*     username, adjustment, and message attached.
 */
 function getPointsFromMessage(text) {
-  const pattern = /(\S+)\s((-|\+)?[0-9]+)(\s(.*))?$/
-  const match = text.match(pattern);
+  const match = text.match(PTS_REGEX);
   if (match === null) {
     throw new Error('Unable to extract points from message! - \"' + text + '\"');
   }
-  const points = {};
+  const users = [];
+  const points = parseInt(match[3]);
+  const names = match[1].replace(/\s/g, '').split(',');
+  names.forEach(e => {
+    if (e.length > 0) {
+      const user = {};
+      user.username = e;
+      user.adjustment = points;
+      user.msg = match[6];
+      users.push(user);
+    }
+  });
 
-  points.username = match[1];
-  points.adjustment = parseInt(match[2]);
-  points.msg = match[5];
-
-  return points;
+  return users;
 }
 
 /**
@@ -42,22 +52,28 @@ function getPointsFromMessage(text) {
 module.exports = (user, channel, text = '', command = {}, botToken = null, callback) => {
   if (RESTRICTED_CHANNELS.indexOf(channel) > -1) {
     console.log('/pts ' + text);
-    let out, points;
+    let out = {}, users;
     try {
-      points = getPointsFromMessage(text);
+      users = getPointsFromMessage(text);
+      out.usernames = users.length === 1
+          ? users[0].username
+          : users.reduce((acc, curr) => {return acc += curr.username + ' '}, '');
+      out.adjustment = users[0].adjustment;
+      out.msg = users[0].msg;
     } catch (e) {
       callback(null, {
         channel: user,
-        text: 'Invalid format! Please follow /pts username +/-# message(optional).',
+        text: 'Invalid format! Please follow /pts username(,username2,...) +/-# message(optional).',
       });
       console.error(e);
       return;
     }
     try {
-      out = `<@${user}>: ${points.username} ${points.adjustment > 0 ? '+':''}${points.adjustment} pts${!!points.msg ? ' -- ' + points.msg : ''}`;
-      // Send points to sheets backend      
-      Scoreboard.updatePoints(points.username, points.adjustment, msg => {
-        callback(null, { text: msg ? msg : out });
+      // assumption is that all point totals being modified are modified with the same adjustment
+      out.body = `<@${user}>: ${out.usernames}${out.adjustment > 0 ? '+':''}${out.adjustment} pts${!!out.msg ? ' -- ' + out.msg : ''}`;
+      // callback(null, { text: out.body });
+      Scoreboard.updatePoints(users, msg => {
+          callback(null, { text: msg ? msg : out.body });
       });
     } catch (e) {
       callback(null, {

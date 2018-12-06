@@ -39,13 +39,26 @@ async function getScoreboard(callback) {
 /**
  * Updates a user's points in sheets and calls the callback function afterwards. First calls
  * getScoreboard to grab the current state of the sheets.
- * @param {string} username User's handle in sheets
- * @param {int} mod The adjusment being made to a user's points
+ * @param {Object[]} users Array of user objects to be modified
  * @param {Function} callback Callback function that is called after sheets write
  */
-function updatePoints(username, mod, callback) {
-  getScoreboard(players => {
-    performUpdatePoints(players, username, mod, callback);
+function updatePoints(users, callback) {
+  const promises = [];
+  getScoreboard(async players => {
+    try {
+      users.forEach(user => {
+        promises.push(new Promise(resolve => {
+          performUpdatePoints(players, user.username, user.adjustment, () => {
+            resolve();
+          });
+        }));
+      });
+      await Promise.all(promises);
+      callback();
+    } catch (e) {
+      console.error(e);
+      throw new Error('Something went wrong while updating sheets.');
+    }
   });
 }
 
