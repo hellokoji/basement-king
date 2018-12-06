@@ -23,11 +23,15 @@ module.exports = (user, channel, text = '', command = {}, botToken = null, callb
   if (RESTRICTED_CHANNELS.indexOf(channel) > -1) {
     Scoreboard.getScoreboard(players => {
       let out = '';
-      for (let player in players) {
+      const usernames = Object.keys(players);
+      usernames.sort((username1, username2) => {
+        return players[username2].points - players[username1].points
+      });
+      usernames.forEach(player => {
         if (players.hasOwnProperty(player)) {
           out += player + ' : ' + players[player].points + '\n';          
         }
-      }
+      })
       callback(null, {
         text: out,
         attachments: [
