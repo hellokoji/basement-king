@@ -56,7 +56,7 @@ module.exports = (user, channel, text = '', command = {}, botToken = null, callb
     try {
       users = getPointsFromMessage(text);
       out.usernames = users.length === 1
-          ? users[0].username
+          ? users[0].username + ' '
           : users.reduce((acc, curr) => {return acc += curr.username + ' '}, '');
       out.adjustment = users[0].adjustment;
       out.msg = users[0].msg;
