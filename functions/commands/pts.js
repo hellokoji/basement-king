@@ -85,7 +85,7 @@ module.exports = (user, channel, text = '', command = {}, botToken = null, callb
   } else {
     callback(null, {
       channel: user,
-      text: 'You are not in the right channel! Try #basementking.',
+      text: 'You are not in the right channel! Try <#CEGN9SP0X>.',
     });
   }
 };
