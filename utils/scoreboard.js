@@ -67,49 +67,53 @@ function getScoreboardTable(players, callback) {
 }
 
 /**
- * Updates a user's points in sheets and calls the callback function afterwards. First calls
- * getScoreboard to grab the current state of the sheets.
+ * Updates a user's points in sheets and calls the callback function
+ * afterwards. First calls getScoreboard to grab the current state of the
+ * sheets.
+ * 
  * @param {Object[]} users Array of user objects to be modified
- * @param {Function} callback Callback function that is called after sheets write
+ * @param {Object} scoreboard scoreboard object holding the current scores
+ * @param {Function<undefined>} callback function that is called after point
+ *    updates have been completed. First parameter is an error if present, the
+ *    second is the newly modified scoreboard object.
  */
-function updatePoints(users, callback) {
+async function updatePoints(users, scoreboard, callback) {
   const promises = [];
-  getScoreboard(async players => {
-    try {
-      users.forEach(user => {
-        promises.push(new Promise(resolve => {
-          performUpdatePoints(players, user.username, user.adjustment, () => {
-            resolve();
-          });
-        }));
-      });
-      await Promise.all(promises);
-      callback();
-    } catch (e) {
-      console.error(e);
-      throw new Error('Something went wrong while updating sheets.');
-    }
-  });
+  try {
+    users.forEach(user => {
+      promises.push(new Promise((resolve,reject) => {
+        if (!scoreboard[user.username]) {
+          // NOTE: potential race here if usernames are not found before sheets
+          // update is performed.
+          reject('Unable to find ' + user.username + ' in Scoreboard!');
+        }
+        scoreboard[user.username].points =
+            parseInt(scoreboard[user.username].points) + user.adjustment;
+        performUpdatePoints(scoreboard, user.username, () => {
+          resolve();
+        });
+      }));
+    });
+    await Promise.all(promises);
+    callback(null, scoreboard);
+  } catch (e) {
+    console.error(e);
+    callback(e);
+  }
 }
 
 /**
  * Performer for point update. If the player's username does not exist in the
  * sheets, an error will be thrown. Always tries to modify the C column of
  * the corresponding row.
+ * 
  * @param {Object} players The scoreboard object containing all of the players
  *    data.
  * @param {string} username The player's username handle in sheets.
- * @param {int} mod The adjustment to be made to a user's point total.
- * @param {Function} callback The function that will be called after sheets
- *    has been executed.
+ * @param {Function<undefined>} callback The function that will be called after
+ *    sheets has been executed.
  */
-async function performUpdatePoints(players, username, mod, callback) {
-  if (!players[username]) {
-    const error = 'Unable to find ' + username + ' in Scoreboard!';
-    callback(error);
-    console.error('Error -', error);
-    return;
-  }
+async function performUpdatePoints(players, username, callback) {
   let sheets;
   try {
     sheets = await Sheets.getSheets();
@@ -117,7 +121,8 @@ async function performUpdatePoints(players, username, mod, callback) {
     throw new Error('Unable to intialize sheets. Something went wrong.');
   }
 
-  const score = parseInt(players[username].points) + mod;
+  const score = players[username].points;
+  // console.log(players, username);
   sheets.spreadsheets.values.update({
     spreadsheetId: await Sheets.getSheetID(),
     range: 'Scoreboard!C' + players[username].rowNum,
