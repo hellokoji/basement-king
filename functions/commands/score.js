@@ -22,22 +22,8 @@ const RESTRICTED_CHANNELS = [
 module.exports = (user, channel, text = '', command = {}, botToken = null, callback) => {
   if (RESTRICTED_CHANNELS.indexOf(channel) > -1) {
     Scoreboard.getScoreboard(players => {
-      let out = '';
-      const usernames = Object.keys(players);
-      usernames.sort((username1, username2) => {
-        return players[username2].points - players[username1].points
-      });
-      usernames.forEach(player => {
-        if (players.hasOwnProperty(player)) {
-          out += player + ' : ' + players[player].points + '\n';          
-        }
-      })
-      callback(null, {
-        text: out,
-        attachments: [
-          // You can customize your messages with attachments.
-          // See https://api.slack.com/docs/message-attachments for more info.
-        ]
+      Scoreboard.getScoreboardTable(players, out => {
+        callback(null, { text: '```' + out + '```' });
       });
     });
   } else {

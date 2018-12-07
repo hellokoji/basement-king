@@ -1,7 +1,10 @@
 const Sheets = require('../helpers/sheets_helper.js');
+const cTable = require('console.table');
 
 /**
- * Prints the names and majors of students in a sample spreadsheet:
+ * Generates an object of the current state of the scoreboard in the sheets.
+ * Calls the callback function with the parameter of the object.
+ * 
  * @see https://docs.google.com/spreadsheets/d/1Bl_imBpmXZcyvCUVTPwuUtceZy8A5Ly41HlVjJ_5GQI/edit
  * @param callback function to call after successfully retrieving the scoreboard. Passes player scores.
  */
@@ -34,6 +37,33 @@ async function getScoreboard(callback) {
     SCOREBOARD_CACHE = players;
     callback(players);
   });
+}
+
+/**
+ * Generates the out table string of the scoreboard object given in the players
+ * parameter. Executes the callback parameter with the table string as a
+ * parameter.
+ * 
+ * @param {Object} players Object representation of the scoreboard
+ * @param {Function<undefined>} callback Function to call after the table
+ *    string is generated.
+ */
+function getScoreboardTable(players, callback) {
+  const out = [];
+  const usernames = Object.keys(players);
+  usernames.sort((username1, username2) => {
+    return players[username2].points - players[username1].points
+  });
+  usernames.forEach(player => {
+    if (players.hasOwnProperty(player)) {
+      out.push({
+        Username: player,
+        Points: players[player].points,
+      });
+    }
+  });
+  const table = cTable.getTable(out).slice(0,-2);
+  callback(table);
 }
 
 /**
@@ -103,5 +133,6 @@ async function performUpdatePoints(players, username, mod, callback) {
 
 module.exports = {
   getScoreboard,
+  getScoreboardTable,
   updatePoints,
 }
