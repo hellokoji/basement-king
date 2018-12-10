@@ -8,9 +8,12 @@ The Basement Constable is a slackbot that is backed by [Stdlib](https://stdlib.c
 
 # How to use it (Commands)
 
+- [/pts](https://github.com/hellokoji/basement-king#pts)
+- [/score](https://github.com/hellokoji/basement-king#score)
+
 The Basement Constable uses "slash" commands to invoke its functions. The integration within the Slack organization needs to be configured to send a request to the specific Stdlib url. After a slash command is typed, the message payload is then sent to Stdlib app and ingested into the `functions/commands/SLASH_COMMAND_NAME.js` function.
 
-Stdlib allows the bot to listen to any standard slack events and perform a callback function with Slack's standardized callback API. A JSON object is sent to Slack with a few fields like text, channel, and attachments specifying the payload of the message you want to send. You can read more about it [here in the Slack documentation](https://api.slack.com/docs/messages).
+Stdlib allows the bot to listen to any standard slack events and perform a callback function with Slack's standardized callback API. A JSON object is sent back to Slack with a few fields like `text`, `channel`, and `attachments` specifying the payload of the message you want to send. You can read more about it [here in the Slack documentation](https://api.slack.com/docs/messages).
 
 ## `/pts`
 
@@ -20,6 +23,7 @@ The main command and entry-point for the Basement Constable. Used to add or subt
 
 ### Example:
 Query: `/pts hellokoji,phoebethedog +1 Because they live in California`
+
 Response:
 ```
 @koji: hellokoji phoebethedog +1 pts -- Because they live in California
@@ -37,6 +41,7 @@ Prints the current state of the scoreboard ordered by point value in a separate 
 
 ### Example:
 Query: `/score`
+
 Response:
 ```
 Username      Points
